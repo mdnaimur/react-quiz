@@ -2,14 +2,13 @@ import { createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWith
 import React, { useContext, useEffect, useState } from "react";
 import '../firebase';
 
-
 const AuthContext = React.createContext();
 
 export function useAuth() {
     return useContext(AuthContext);
 }
 
-export function AuthProvider({ childern }) {
+export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState();
 
@@ -18,27 +17,34 @@ export function AuthProvider({ childern }) {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
             setLoading(false);
-        })
+        });
+
         return unsubscribe;
     }, []);
-    async function singup(email, password, username) {
+
+    // signup function
+    async function signup(email, password, username) {
         const auth = getAuth();
         await createUserWithEmailAndPassword(auth, email, password);
-        //update profile
-        await updateProfile(auth.currentUser, { displayName: username });
+
+        // update profile
+        await updateProfile(auth.currentUser, {
+            displayName: username,
+        });
+
         const user = auth.currentUser;
         setCurrentUser({
-            ...user
-        })
+            ...user,
+        });
     }
 
-    //login function
+    // login function
     function login(email, password) {
         const auth = getAuth();
-        return signInWithEmailAndPassword(auth, email, password)
+        return signInWithEmailAndPassword(auth, email, password);
     }
 
-    //logout
+    // logout function
     function logout() {
         const auth = getAuth();
         return signOut(auth);
@@ -46,14 +52,15 @@ export function AuthProvider({ childern }) {
 
     const value = {
         currentUser,
-        singup,
+        signup,
         login,
-        logout
-    }
+        logout,
+    };
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && childern}
+            {!loading && children}
         </AuthContext.Provider>
     );
 }
+
